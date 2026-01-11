@@ -41,83 +41,83 @@ This project follows the **Scrum methodology** and showcases:
 - Automated model retraining and promotion
 
 ## Project Structure
-
+```text
 intelligent-chatbot/
 │
 ├── README.md
 ├── .gitignore
 ├── docker-compose.yml
 │
-├── backend/ # Backend API (FastAPI)
-│ ├── app/
-│ │ ├── main.py # FastAPI entry point
-│ │ ├── api/
-│ │ │ ├── routes/
-│ │ │ │ ├── chat.py # /chat endpoint
-│ │ │ │ ├── health.py # /health endpoint
-│ │ │ │ └── init.py
-│ │ │ └── init.py
-│ │ ├── services/
-│ │ │ ├── inference.py # Model inference logic
-│ │ │ ├── model_loader.py # Load model from MLflow
-│ │ │ └── init.py
-│ │ ├── core/
-│ │ │ ├── config.py # Environment variables
-│ │ │ └── logging.py
-│ │ └── init.py
-│ ├── tests/
-│ │ ├── test_chat.py
-│ │ └── test_health.py
-│ ├── requirements.txt
-│ └── Dockerfile
+├── backend/                      # Backend API (FastAPI)
+│   ├── app/
+│   │   ├── main.py               # FastAPI entry point
+│   │   ├── api/
+│   │   │   ├── routes/
+│   │   │   │   ├── chat.py        # /chat endpoint
+│   │   │   │   ├── health.py      # /health endpoint
+│   │   │   │   └── __init__.py
+│   │   │   └── __init__.py
+│   │   ├── services/
+│   │   │   ├── inference.py       # Model inference logic
+│   │   │   ├── model_loader.py    # Load model from MLflow
+│   │   │   └── __init__.py
+│   │   ├── core/
+│   │   │   ├── config.py          # Environment variables
+│   │   │   └── logging.py
+│   │   └── __init__.py
+│   ├── tests/
+│   │   ├── test_chat.py
+│   │   └── test_health.py
+│   ├── requirements.txt
+│   └── Dockerfile
 │
-├── frontend/ # Web-based Chat Interface
-│ ├── public/
-│ ├── src/
-│ │ ├── components/
-│ │ │ └── ChatUI.jsx
-│ │ ├── services/
-│ │ │ └── api.js # Backend API calls
-│ │ ├── App.jsx
-│ │ └── main.jsx
-│ ├── package.json
-│ ├── vite.config.js
-│ └── Dockerfile
+├── frontend/                     # Web-based Chat Interface
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── ChatUI.jsx
+│   │   ├── services/
+│   │   │   └── api.js             # Backend API calls
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   ├── vite.config.js
+│   └── Dockerfile
 │
-├── ml/ # Machine Learning & MLOps
-│ ├── data/
-│ │ ├── raw/
-│ │ └── processed/
-│ ├── training/
-│ │ ├── train.py # Initial training
-│ │ ├── evaluate.py
-│ │ └── preprocessing.py
-│ ├── retraining/
-│ │ ├── retrain.py # Automated retraining
-│ │ ├── compare_models.py # New vs production
-│ │ └── promote_model.py # MLflow promotion
-│ ├── mlflow/
-│ │ └── mlflow_tracking.py
-│ └── requirements.txt
+├── ml/                           # Machine Learning & MLOps
+│   ├── data/
+│   │   ├── raw/
+│   │   └── processed/
+│   ├── training/
+│   │   ├── train.py               # Initial training
+│   │   ├── evaluate.py
+│   │   └── preprocessing.py
+│   ├── retraining/
+│   │   ├── retrain.py             # Automated retraining
+│   │   ├── compare_models.py      # New vs production model
+│   │   └── promote_model.py       # MLflow model promotion
+│   ├── mlflow/
+│   │   └── mlflow_tracking.py
+│   └── requirements.txt
 │
-├── cicd/ # CI/CD Pipelines
-│ ├── github-actions/
-│ │ └── pipeline.yml
-│ └── scripts/
-│ ├── deploy.sh
-│ └── rollback.sh
+├── cicd/                         # CI/CD Pipelines
+│   ├── github-actions/
+│   │   └── pipeline.yml
+│   └── scripts/
+│       ├── deploy.sh
+│       └── rollback.sh
 │
-├── k8s/ # Kubernetes Manifests
-│ ├── backend-deployment.yaml
-│ ├── frontend-deployment.yaml
-│ ├── service.yaml
-│ ├── ingress.yaml
-│ └── hpa.yaml
+├── k8s/                          # Kubernetes Manifests
+│   ├── backend-deployment.yaml
+│   ├── frontend-deployment.yaml
+│   ├── service.yaml
+│   ├── ingress.yaml
+│   └── hpa.yaml
 │
-├── monitoring/ # Monitoring & Observability
-│ ├── prometheus/
-│ │ └── prometheus.yml
-│ ├── grafana/
-│ │ └── dashboards/
-│ └── alerts/
-│ └── alert-rules.yml
+├── monitoring/                   # Monitoring & Observability
+│   ├── prometheus/
+│   │   └── prometheus.yml
+│   ├── grafana/
+│   │   └── dashboards/
+│   └── alerts/
+│       └── alert-rules.yml

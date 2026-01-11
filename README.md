@@ -49,18 +49,16 @@ intelligent-chatbot/
 ├── docker-compose.yml
 │
 ├── backend/                      # Backend API (FastAPI)
-│   ├── app/
-│   │   ├── main.py               # FastAPI entry point
-│   │   ├── api/
-│   │   │   ├── routes/
-│   │   │   │   ├── chat.py        # /chat endpoint
-│   │   │   │   ├── health.py      # /health endpoint
-│   │   │   │   └── __init__.py
-│   │   │   └── __init__.py
-│   │   ├── services/
-│   │   │   ├── inference.py       # Model inference logic
-│   │   │   ├── model_loader.py    # Load model from MLflow
-│   │   │   └── __init__.py
+│   |
+│   |── main.py               # FastAPI entry point
+│   |── routes/
+│   │   ├── chat.py        # /chat endpoint
+│   │   ├── health.py      # /health endpoint
+|   |   |── __init__.py
+│   ├── services/
+│   │   ├── inference.py       # Model inference logic
+│   │   ├── model_loader.py    # Load model from MLflow
+│   │   └── __init__.py
 │   │   ├── core/
 │   │   │   ├── config.py          # Environment variables
 │   │   │   └── logging.py
@@ -119,5 +117,3 @@ intelligent-chatbot/
 │   │   └── prometheus.yml
 │   ├── grafana/
 │   │   └── dashboards/
-│   └── alerts/
-│       └── alert-rules.yml

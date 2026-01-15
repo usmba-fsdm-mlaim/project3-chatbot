@@ -214,3 +214,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# ML data
+nlp/data/raw/*
+nlp/data/processed/*
+
+# Keep folder structure
+!nlp/data/raw/.gitkeep
+!nlp/data/processed/.gitkeep
+.vscode/

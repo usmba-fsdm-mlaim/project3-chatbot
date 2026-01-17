@@ -23,6 +23,7 @@ def normalize_text(text):
 # -------- Charger dataset -------- #
 def load_medquad_csv(csv_path):
     df = pd.read_csv(csv_path)
+    df = df.dropna(subset=["question", "answer", "focus_area"])
     df = df[["question", "answer", "focus_area"]].copy()
     return df
 

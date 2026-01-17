@@ -1,10 +1,17 @@
 import pandas as pd
 import re
 from sklearn.model_selection import train_test_split
-import os
+from pathlib import Path
+import os, kagglehub, shutil
 
-CSV_PATH = r"C:\Users\ayoub\Github\projet3-chatbot\project3-chatbot\nlp\data\raw\medquad.csv"
-
+DATASET_PATH = Path(kagglehub.dataset_download("pythonafroz/medquad-medical-question-answer-for-ai-research"))
+DESTINATION_PATH = Path("nlp/data/raw")
+DESTINATION_PATH.mkdir(parents=True, exist_ok=True)
+shutil.copytree(DATASET_PATH, DESTINATION_PATH, dirs_exist_ok=True)
+print(f"Dataset downloaded to: {DATASET_PATH}")
+print(f"Dataset copied to: {DESTINATION_PATH}")
+CSV_PATH = DESTINATION_PATH / "medquad.csv"
+print(f"CSV Path: {CSV_PATH}")
 # -------- Nettoyage texte -------- #
 def normalize_text(text):
     if isinstance(text, str):
@@ -27,73 +34,16 @@ def preprocess(csv_path):
 
     df = load_medquad_csv(csv_path)
 
-    # Sauvegarde brute (3 colonnes seulement)
-    df.to_csv("nlp/data/raw/medquad_raw.csv", index=False)
-
     # Nettoyage interne
     df["question"] = df["question"].apply(normalize_text)
     df["answer"] = df["answer"].apply(normalize_text)
     df["focus_area"] = df["focus_area"].apply(normalize_text)
-
-    # Split
-from datasets import load_dataset
-import pandas as pd
-import re
-from sklearn.model_selection import train_test_split
-
-def normalize_text(text):
-    text = text.lower()
-    text = re.sub(r'[^\w\s]', '', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-
-def load_medqa():
-    dataset = load_dataset("pubmed_qa", "pqa_labeled")
-
-    data = dataset["train"]
-
-    pairs = []
-
-    for record in data:
-        question = record["question"]
-        answer_text = record["final_decision"]
-
-        pairs.append({
-            "role": "question",
-            "text": question
-        })
-        pairs.append({
-            "role": "answer",
-            "text": answer_text
-        })
-
-    return pd.DataFrame(pairs)
-
-
-def preprocess():
-    df = load_medqa()
-    df.to_csv("nlp/data/raw/Dataset_pubmedqa.csv", index=False)
     
-    df["clean_text"] = df["text"].apply(normalize_text)
-
-    train_df, test_df = train_test_split(
-        df,
-        test_size=0.2,
-        random_state=42,
-        shuffle=True
-    )
-
-    # Sauvegarde finale (3 colonnes uniquement)
-    
-    train_df.to_csv("nlp/data/processed/train.csv", index=False)
-    test_df.to_csv("nlp/data/processed/test.csv", index=False)
-    df.to_csv("nlp/data/processed/processed.csv", index=False)
-
-    print("✔ Final dataset ready with columns: question, answer, focus_area")
+    # Split train/test
+    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
+    train_df.to_csv("nlp/data/processed/medquad_train.csv", index=False)
+    test_df.to_csv("nlp/data/processed/medquad_validation.csv", index=False)
 
 if __name__ == "__main__":
     preprocess(CSV_PATH)
     print("✓ MedQA dataset processed & saved successfully")
-
-if __name__ == "__main__":
-    preprocess()

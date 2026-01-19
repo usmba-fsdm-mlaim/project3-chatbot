@@ -37,6 +37,7 @@ def preprocess(csv_path):
     df["answer"] = df["answer"].apply(normalize_text)
     df["focus_area"] = df["focus_area"].apply(normalize_text)
 
+    # Split
     train_df, test_df = train_test_split(
         df,
         test_size=0.2,
@@ -44,6 +45,7 @@ def preprocess(csv_path):
         shuffle=True
     )
 
+    # Sauvegarde finale (3 colonnes uniquement)
     train_df.to_csv("nlp/data/processed/train.csv", index=False)
     test_df.to_csv("nlp/data/processed/test.csv", index=False)
     df.to_csv("nlp/data/processed/processed.csv", index=False)
@@ -52,3 +54,7 @@ def preprocess(csv_path):
 
 if __name__ == "__main__":
     preprocess(CSV_PATH)
+    print("✓ MedQA dataset processed & saved successfully")
+
+if __name__ == "__main__":
+    preprocess()

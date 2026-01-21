@@ -117,3 +117,22 @@ intelligent-chatbot/
 │   │   └── prometheus.yml
 │   ├── grafana/
 │   │   └── dashboards/
+
+
+## Dataset Preparation
+
+This project uses the PubMedQA dataset for medical question-answering.
+
+To generate the training and test sets:
+
+```bash
+cd nlp/training
+pip install -r ../requirements.txt
+python preprocessing.py
+
+This will generate:
+
+nlp/data/raw/Dataset_pubmedqa.csv
+nlp/data/processed/train.csv
+nlp/data/processed/test.csv
+nlp/data/processed/processed.csv

@@ -214,7 +214,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-
-# Data files
-nlp/data/processed/*
-nlp/data/raw/*
+# Local files
+/nlp/data/raw/*
+/nlp/data/processed/*

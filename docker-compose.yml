@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # =========================================
+  # 1. BACKEND (FastAPI + Qwen Model)
+  # =========================================
+  backend:
+    build: ./backend
+    container_name: chatdoctor-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Montage du code pour le hot-reload
+      - ./backend:/app
+      # Montage des modèles : Le dossier local "nlp/models" devient "models" DANS le conteneur /app
+      - ./nlp/models:/app/models
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      # VARIABLE CRITIQUE : Dit au code Python de chercher dans "models" (chemin interne Docker)
+      - MODEL_PATH=models
+    depends_on:
+      - mlflow
+    networks:
+      - chat-net
+
+  # =========================================
+  # 2. FRONTEND (Next.js / React)
+  # =========================================
+  frontend:
+    build: ./frontend
+    container_name: chatdoctor-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # URL pour que le navigateur du client trouve l'API
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - chat-net
+
+  # =========================================
+  # 3. MLFLOW (Tracking des expériences)
+  # =========================================
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.0
+    container_name: chatdoctor-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      # Montage dans /mlflow_data pour éviter le conflit "ModuleNotFoundError"
+      - ./nlp/mlflow:/mlflow_data
+    # Commande ajustée pour utiliser /mlflow_data
+    command: mlflow server --backend-store-uri sqlite:////mlflow_data/mlflow.db --default-artifact-root /mlflow_data/artifacts --host 0.0.0.0
+    networks:
+      - chat-net
+
+  # =========================================
+  # 4. PROMETHEUS (Monitoring Métriques)
+  # =========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: chatdoctor-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - chat-net
+
+  # =========================================
+  # 5. GRAFANA (Tableaux de bord)
+  # =========================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: chatdoctor-grafana
+    ports:
+      - "3001:3000" # Accessible sur http://localhost:3001
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - chat-net
+
+networks:
+  chat-net:
+    driver: bridge

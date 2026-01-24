@@ -48,7 +48,7 @@ RUN mkdir -p /var/lib/grafana /var/log/grafana /etc/grafana/provisioning && \
     chmod -R 777 /var/lib/grafana /var/log/grafana
 
 # Expose ports
-EXPOSE 9090 3001
+EXPOSE 9090 3003
 
 # Start supervisor
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

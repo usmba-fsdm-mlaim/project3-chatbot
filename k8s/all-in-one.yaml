@@ -13,7 +13,7 @@ metadata:
   labels:
     app: chatbot
 data:
-  WANDB_API_KEY: ""  # Will be set from .env file
+  WANDB_API_KEY: "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"  # Will be set from .env file
   WANDB_PROJECT: "qwen-finetuning"
   WANDB_LOG_MODEL: "true"
   WANDB_SILENT: "true"

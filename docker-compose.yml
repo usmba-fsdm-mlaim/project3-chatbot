@@ -34,7 +34,7 @@ services:
     image: sakkoumhamzausmba/chatbot-frontend:latest
     container_name: chatdoctor-frontend
     ports:
-      - "3002:3002"
+      - "3001:3001"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
@@ -50,7 +50,7 @@ services:
     container_name: chatdoctor-monitoring
     ports:
       - "9090:9090"  # Prometheus
-      - "3001:3001"  # Grafana
+      - "3003:3003"  # Grafana
     volumes:
       - prometheus_data:/var/lib/prometheus
       - grafana_data:/var/lib/grafana

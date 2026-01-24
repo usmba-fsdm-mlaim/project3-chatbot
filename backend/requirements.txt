@@ -1,0 +1,13 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+transformers==4.46.3
+peft==0.18.1
+torch>=2.0.0
+accelerate>=0.20.0
+python-multipart==0.0.9
+wandb>=0.16.0
+python-dotenv==1.0.1
+
+prometheus-client==0.19.0
+prometheus-fastapi-instrumentator==6.1.0

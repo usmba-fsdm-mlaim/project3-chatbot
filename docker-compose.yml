@@ -1,0 +1,71 @@
+
+services:
+  # =========================================
+  # 1. BACKEND (FastAPI + Qwen Model + W&B)
+  # =========================================
+  backend:
+    image: sakkoumhamzausmba/chatbot-backend:latest
+    container_name: chatdoctor-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      # CACHE: Persist W&B artifacts & HuggingFace models so they aren't re-downloaded
+      - wandb_cache:/root/.cache/wandb
+      - hf_cache:/root/.cache/huggingface
+    environment:
+      # define environment variables for W&B and model configuration in .env file
+      # W&B Configuration
+      - WANDB_API_KEY=${WANDB_API_KEY}
+      - WANDB_PROJECT=${WANDB_PROJECT}
+      - WANDB_LOG_MODEL=true
+      - WANDB_SILENT=true
+      # Model path (The artifact address from W&B)
+      - ARTIFACT_ADDRESS=${ARTIFACT_ADDRESS}
+      # Device config
+      - NVIDIA_VISIBLE_DEVICES=all 
+    networks:
+      - chat-net
+
+  # =========================================
+  # 2. FRONTEND (Next.js / React)
+  # =========================================
+  frontend:
+    image: sakkoumhamzausmba/chatbot-frontend:latest
+    container_name: chatdoctor-frontend
+    ports:
+      - "3002:3002"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - chat-net
+
+  # =========================================
+  # 3. MONITORING (Prometheus + Grafana)
+  # =========================================
+  monitoring:
+    image: sakkoumhamzausmba/chatbot-monitoring:latest
+    container_name: chatdoctor-monitoring
+    ports:
+      - "9090:9090"  # Prometheus
+      - "3001:3001"  # Grafana
+    volumes:
+      - prometheus_data:/var/lib/prometheus
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - backend
+    networks:
+      - chat-net
+
+
+networks:
+  chat-net:
+    driver: bridge
+
+volumes:
+  wandb_cache:
+  hf_cache:
+  prometheus_data:
+  grafana_data:

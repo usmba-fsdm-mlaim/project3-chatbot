@@ -1,0 +1,136 @@
+{
+  "dashboard": {
+    "title": "Chatbot Monitoring",
+    "uid": "chatbot-dashboard",
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[1m])",
+            "legendFormat": "{{method}} {{handler}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "reqps", "label": "Requests/s"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Response Time (p95)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p50"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "HTTP Status Codes",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=\"200\"}[1m])",
+            "legendFormat": "200 OK"
+          },
+          {
+            "expr": "rate(http_requests_total{status=~\"4..\"}[1m])",
+            "legendFormat": "4xx Client Error"
+          },
+          {
+            "expr": "rate(http_requests_total{status=~\"5..\"}[1m])",
+            "legendFormat": "5xx Server Error"
+          }
+        ],
+        "yaxes": [
+          {"format": "reqps", "label": "Requests/s"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Error Rate %",
+        "type": "singlestat",
+        "gridPos": {"x": 12, "y": 8, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100"
+          }
+        ],
+        "format": "percent",
+        "valueName": "current",
+        "thresholds": "1,5",
+        "colors": ["green", "yellow", "red"]
+      },
+      {
+        "id": 5,
+        "title": "Total Requests",
+        "type": "singlestat",
+        "gridPos": {"x": 18, "y": 8, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(http_requests_total)"
+          }
+        ],
+        "format": "short",
+        "valueName": "current"
+      },
+      {
+        "id": 6,
+        "title": "Service Uptime",
+        "type": "singlestat",
+        "gridPos": {"x": 12, "y": 12, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "up{job=\"chatbot-backend\"}"
+          }
+        ],
+        "format": "none",
+        "valueName": "current",
+        "valueMaps": [
+          {"value": "0", "text": "DOWN"},
+          {"value": "1", "text": "UP"}
+        ],
+        "colors": ["red", "green", "green"],
+        "thresholds": "0.5,1"
+      },
+      {
+        "id": 7,
+        "title": "Average Response Time",
+        "type": "singlestat",
+        "gridPos": {"x": 18, "y": 12, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])"
+          }
+        ],
+        "format": "s",
+        "valueName": "current"
+      }
+    ],
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    }
+  }
+}

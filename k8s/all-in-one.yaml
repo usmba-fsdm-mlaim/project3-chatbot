@@ -1,0 +1,319 @@
+# =========================================
+# ALL-IN-ONE KUBERNETES MANIFEST
+# Deploy everything with: kubectl apply -f all-in-one.yaml
+# =========================================
+
+# =========================================
+# 1. CONFIGMAP (Environment Variables from .env)
+# =========================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chatbot-config
+  labels:
+    app: chatbot
+data:
+  WANDB_API_KEY: ""  # Will be set from .env file
+  WANDB_PROJECT: "qwen-finetuning"
+  WANDB_LOG_MODEL: "true"
+  WANDB_SILENT: "true"
+  ARTIFACT_ADDRESS: "chatbot-team/qwen-finetuning/youssef-qwen2-medical-bot:v0"
+  NEXT_PUBLIC_API_URL: "http://chatbot-backend-service:8000"
+
+---
+# =========================================
+# 1B. PROMETHEUS CONFIGMAP
+# =========================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  labels:
+    app: chatbot-monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    
+    scrape_configs:
+      # Backend API Metrics
+      - job_name: "chatbot-backend"
+        metrics_path: /metrics
+        static_configs:
+          - targets: ["chatbot-backend-service:8000"]
+            labels:
+              service: "backend"
+              environment: "kubernetes"
+      
+      # Prometheus Self-Monitoring
+      - job_name: "prometheus"
+        static_configs:
+          - targets: ["localhost:9090"]
+
+---
+# =========================================
+# 2. BACKEND DEPLOYMENT
+# =========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-backend
+  labels:
+    app: chatbot-backend
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: chatbot-backend
+  template:
+    metadata:
+      labels:
+        app: chatbot-backend
+    spec:
+      containers:
+      - name: backend
+        image: sakkoumhamzausmba/chatbot-backend:latest
+        imagePullPolicy: IfNotPresent  # Pull from Docker Hub if not available locally
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: chatbot-config
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 5
+
+---
+# =========================================
+# 2. BACKEND SERVICE
+# =========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot-backend-service
+  labels:
+    app: chatbot-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: chatbot-backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: http
+
+---
+# =========================================
+# 3. FRONTEND DEPLOYMENT
+# =========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-frontend
+  labels:
+    app: chatbot-frontend
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: chatbot-frontend
+  template:
+    metadata:
+      labels:
+        app: chatbot-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: sakkoumhamzausmba/chatbot-frontend:latest
+        imagePullPolicy: IfNotPresent  # Pull from Docker Hub if not available locally
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: chatbot-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+---
+# =========================================
+# 4. FRONTEND SERVICE (LoadBalancer)
+# =========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot-frontend-service
+  labels:
+    app: chatbot-frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: chatbot-frontend
+  ports:
+  - port: 80
+    targetPort: 3000
+    name: http
+
+---
+# =========================================
+# 5. MONITORING DEPLOYMENT
+# =========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-monitoring
+  labels:
+    app: chatbot-monitoring
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: chatbot-monitoring
+  template:
+    metadata:
+      labels:
+        app: chatbot-monitoring
+    spec:
+      containers:
+      - name: monitoring
+        image: sakkoumhamzausmba/chatbot-monitoring:latest
+        imagePullPolicy: IfNotPresent  # Pull from Docker Hub if not available locally
+        ports:
+        - containerPort: 9090
+          name: prometheus
+        - containerPort: 3000
+          name: grafana
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+---
+# =========================================
+# 6. MONITORING SERVICE
+# =========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot-monitoring-service
+  labels:
+    app: chatbot-monitoring
+spec:
+  type: LoadBalancer
+  selector:
+    app: chatbot-monitoring
+  ports:
+  - port: 9090
+    targetPort: 9090
+    name: prometheus
+  - port: 3000
+    targetPort: 3000
+    name: grafana
+
+---
+# =========================================
+# 7. BACKEND AUTOSCALER
+# =========================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: chatbot-backend-hpa
+  labels:
+    app: chatbot-backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: chatbot-backend
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 60
+
+---
+# =========================================
+# 8. FRONTEND AUTOSCALER
+# =========================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: chatbot-frontend-hpa
+  labels:
+    app: chatbot-frontend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: chatbot-frontend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 30

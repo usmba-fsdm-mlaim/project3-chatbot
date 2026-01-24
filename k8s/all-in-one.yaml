@@ -154,7 +154,7 @@ spec:
         image: sakkoumhamzausmba/chatbot-frontend:latest
         imagePullPolicy: IfNotPresent  # Pull from Docker Hub if not available locally
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
         envFrom:
         - configMapRef:
             name: chatbot-config
@@ -168,13 +168,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 3000
+            port: 3001
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 3000
+            port: 3001
           initialDelaySeconds: 10
           periodSeconds: 5
 
@@ -194,7 +194,7 @@ spec:
     app: chatbot-frontend
   ports:
   - port: 80
-    targetPort: 3000
+    targetPort: 3001
     name: http
 
 ---
@@ -226,7 +226,7 @@ spec:
         ports:
         - containerPort: 9090
           name: prometheus
-        - containerPort: 3000
+        - containerPort: 3003
           name: grafana
         resources:
           requests:
@@ -254,8 +254,8 @@ spec:
   - port: 9090
     targetPort: 9090
     name: prometheus
-  - port: 3000
-    targetPort: 3000
+  - port: 3003
+    targetPort: 3003
     name: grafana
 
 ---

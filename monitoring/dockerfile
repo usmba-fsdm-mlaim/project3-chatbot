@@ -31,7 +31,7 @@ COPY grafana/provisioning /etc/grafana/provisioning
 
 # Configure Grafana
 RUN echo "[server]" > /opt/grafana/conf/defaults.ini && \
-    echo "http_port = 3001" >> /opt/grafana/conf/defaults.ini && \
+    echo "http_port = 3003" >> /opt/grafana/conf/defaults.ini && \
     echo "[security]" >> /opt/grafana/conf/defaults.ini && \
     echo "admin_password = admin" >> /opt/grafana/conf/defaults.ini && \
     echo "[paths]" >> /opt/grafana/conf/defaults.ini && \
